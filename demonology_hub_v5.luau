@@ -206,19 +206,27 @@ local function loadSavedKey()
         if type(parsed) ~= "table" or type(parsed.key) ~= "string" or type(parsed.expiry) ~= "number" then
             return nil
         end
+        if type(parsed.userId) ~= "number" or parsed.userId ~= LocalPlayer.UserId then
+            return nil
+        end
         if tick() >= parsed.expiry then
             delfile(KEY_FILE)
             return nil
         end
         return parsed.key
     end)
-    return ok
+    if not ok then return nil end
+    return saved
 end
 local function saveKey(key)
     pcall(function()
         if not writefile then return end
         local expiry = tick() + 86400
-        local data = game:GetService("HttpService"):JSONEncode({key = key, expiry = expiry})
+        local data = game:GetService("HttpService"):JSONEncode({
+            key = key,
+            expiry = expiry,
+            userId = LocalPlayer.UserId,
+        })
         writefile(KEY_FILE, data)
     end)
 end
