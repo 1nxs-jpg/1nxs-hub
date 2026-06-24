@@ -288,40 +288,40 @@ local C = {
 }
 
 local GhostDB = {
-    Aswang    = {"Wither","EMF5","Inscription"},
-    Banshee   = {"GhostOrb","Prints","Freezing"},
-    Demon     = {"EMF5","Prints","Freezing"},
-    Dullahan  = {"Wither","Freezing","Laser"},
-    Dybbuk    = {"Wither","Freezing","Prints"},
-    Entity    = {"SpiritBox","Prints","Laser"},
+    Aswang    = {"Wither","EMF5","GhostWriting"},
+    Banshee   = {"GhostOrb","Handprints","Freezing"},
+    Demon     = {"EMF5","Handprints","Freezing"},
+    Dullahan  = {"Wither","Laser","Freezing"},
+    Dybbuk    = {"Wither","Freezing","Handprints"},
+    Entity    = {"SpiritBox","Handprints","Laser"},
     Ghoul     = {"SpiritBox","Freezing","GhostOrb"},
-    Keres     = {"Wither","SpiritBox","Prints"},
-    Leviathan = {"GhostOrb","Inscription","Prints"},
+    Keres     = {"Wither","SpiritBox","Handprints"},
+    Leviathan = {"GhostWriting","GhostOrb","Handprints"},
     Nightmare = {"EMF5","SpiritBox","GhostOrb"},
-    Oni       = {"Laser","SpiritBox","Freezing"},
-    Phantom   = {"EMF5","Prints","GhostOrb"},
-    Ravager   = {"EMF5","SpiritBox","Inscription"},
-    Revenant  = {"Inscription","EMF5","Freezing"},
-    Shadow    = {"EMF5","Inscription","Laser"},
+    Oni       = {"Laser","Freezing","SpiritBox"},
+    Phantom   = {"EMF5","Handprints","GhostOrb"},
+    Ravager   = {"EMF5","SpiritBox","GhostWriting"},
+    Revenant  = {"GhostWriting","Freezing","EMF5"},
+    Shadow    = {"EMF5","GhostWriting","Laser"},
     Siren     = {"Wither","SpiritBox","EMF5"},
-    Skinwalker= {"Inscription","SpiritBox","Freezing"},
+    Skinwalker= {"GhostWriting","SpiritBox","Freezing"},
     Specter   = {"EMF5","Freezing","Laser"},
-    Umbra     = {"GhostOrb","Laser","Prints"},
-    Wendigo   = {"GhostOrb","Inscription","Laser"},
-    Wisp      = {"Wither","Laser","GhostOrb"},
+    Umbra     = {"GhostOrb","Handprints","Laser"},
+    Wendigo   = {"GhostWriting","GhostOrb","Laser"},
+    Wisp      = {"Wither","GhostOrb","Laser"},
     Wraith    = {"EMF5","SpiritBox","Laser"},
-    Spirit    = {"Prints","Inscription","SpiritBox"},
-    Vex       = {"Wither","Freezing","GhostOrb"},
-    Vesper    = {"Wither","Inscription","Prints"},
+    Spirit    = {"Handprints","GhostWriting","SpiritBox"},
+    Vex       = {"Wither","GhostOrb","Freezing"},
+    Vesper    = {"Wither","Handprints","GhostWriting"},
 }
 
 local EvidenceTypes = {
     {id="EMF5",        label="EMF Level 5",     icon="⚡",  color=C.EvidEMF},
-    {id="Prints",      label="Fingerprints",    icon="🖐",  color=C.EvidPrints},
     {id="SpiritBox",   label="Spirit Box",      icon="📻",  color=C.EvidSpirit},
-    {id="GhostOrb",    label="Ghost Orb",       icon="🔮",  color=C.EvidOrb},
+    {id="GhostWriting",label="Ghost Writing",   icon="✍",   color=C.EvidInscript},
     {id="Freezing",    label="Freezing Temps",  icon="❄",   color=C.EvidFreeze},
-    {id="Inscription", label="Inscription",     icon="✍",   color=C.EvidInscript},
+    {id="GhostOrb",    label="Ghost Orb",       icon="🔮",  color=C.EvidOrb},
+    {id="Handprints",  label="Fingerprints",    icon="🖐",  color=C.EvidPrints},
     {id="Laser",       label="Laser Projector", icon="🔴",  color=C.EvidLaser},
     {id="Wither",      label="Wither",          icon="🥀",  color=C.EvidWither},
 }
@@ -705,13 +705,6 @@ local function getPossibleGhosts()
     for id, val in pairs(S.Evidence) do
         if val then table.insert(found, id) end
     end
-
-    -- Map evidence IDs to the keys used in GhostDB
-    local evidMap = {
-        EMF5 = "EMF5", Prints = "Prints", SpiritBox = "SpiritBox",
-        GhostOrb = "GhostOrb", Freezing = "Freezing", Inscription = "Inscription",
-        Laser = "Laser", Wither = "Wither"
-    }
 
     local possible = {}
     for gname, gev in pairs(GhostDB) do
