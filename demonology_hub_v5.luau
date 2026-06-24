@@ -253,6 +253,7 @@ local Lighting         = game:GetService("Lighting")
 local Workspace        = game:GetService("Workspace")
 local CoreGui          = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService      = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera      = Workspace.CurrentCamera
@@ -269,17 +270,17 @@ end)
 
 local C = {
     Key             = Enum.KeyCode.RightShift,
-    Bg1             = Color3.fromRGB(10, 10, 14),
-    Bg2             = Color3.fromRGB(16, 16, 22),
-    Bg3             = Color3.fromRGB(22, 22, 30),
-    Bg4             = Color3.fromRGB(30, 30, 40),
-    BgHover         = Color3.fromRGB(38, 38, 50),
-    Accent          = Color3.fromRGB(140, 148, 170),
-    AccentDim       = Color3.fromRGB(90, 96, 115),
-    AccentBright    = Color3.fromRGB(200, 208, 225),
-    Text1           = Color3.fromRGB(225, 228, 238),
-    Text2           = Color3.fromRGB(145, 150, 165),
-    Text3           = Color3.fromRGB(80, 84, 100),
+    Bg1             = Color3.fromRGB(12, 12, 16),
+    Bg2             = Color3.fromRGB(18, 18, 24),
+    Bg3             = Color3.fromRGB(24, 24, 32),
+    Bg4             = Color3.fromRGB(34, 34, 44),
+    BgHover         = Color3.fromRGB(42, 42, 54),
+    Accent          = Color3.fromRGB(92, 220, 121),
+    AccentDim       = Color3.fromRGB(64, 94, 73),
+    AccentBright    = Color3.fromRGB(231, 235, 240),
+    Text1           = Color3.fromRGB(236, 238, 243),
+    Text2           = Color3.fromRGB(154, 158, 170),
+    Text3           = Color3.fromRGB(88, 92, 104),
     Green           = Color3.fromRGB(64, 218, 118),
     Red             = Color3.fromRGB(240, 100, 100),
     Yellow          = Color3.fromRGB(245, 200, 20),
@@ -417,6 +418,7 @@ local S = {
     _abilities   = {},
     _abilityLog  = {},
     DetectedAbilities = {},
+    _toggleControls = {},
 }
 
 for _, ev in ipairs(EvidenceTypes) do
@@ -1013,12 +1015,12 @@ local function buildHub()
     MainFrame.Size = UDim2.new(0, 620, 0, 480)
     MainFrame.Position = UDim2.new(0.5, -310, 0.5, -240)
     MainFrame.BackgroundColor3 = C.Bg1
-    MainFrame.BackgroundTransparency = 0.12
+    MainFrame.BackgroundTransparency = 0.14
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
     MainFrame.Parent = Hub
     corner(MainFrame, UDim.new(0, 14))
-    stroke(MainFrame, C.AccentDim, 1, 0.35)
+    stroke(MainFrame, C.AccentDim, 1, 0.45)
 
     local topSheen = Instance.new("Frame")
     topSheen.Size = UDim2.new(1, -30, 0, 1)
@@ -1030,18 +1032,37 @@ local function buildHub()
 
     -- TITLE BAR
     local titleBar = Instance.new("Frame")
-    titleBar.Size = UDim2.new(1, 0, 0, 44)
+    titleBar.Size = UDim2.new(1, 0, 0, 54)
     titleBar.BackgroundColor3 = C.Bg2
-    titleBar.BackgroundTransparency = 0.2
+    titleBar.BackgroundTransparency = 0.15
     titleBar.BorderSizePixel = 0
     titleBar.Parent = MainFrame
     corner(titleBar, UDim.new(0, 14))
+
+    local logoBadge = Instance.new("Frame")
+    logoBadge.Size = UDim2.new(0, 38, 0, 38)
+    logoBadge.Position = UDim2.new(0, 14, 0.5, -19)
+    logoBadge.BackgroundColor3 = C.Bg3
+    logoBadge.BackgroundTransparency = 0.05
+    logoBadge.BorderSizePixel = 0
+    logoBadge.Parent = titleBar
+    corner(logoBadge, UDim.new(1, 0))
+    stroke(logoBadge, C.Accent, 1, 0.65)
+
+    local logoGlyph = Instance.new("TextLabel")
+    logoGlyph.Size = UDim2.new(1, 0, 1, 0)
+    logoGlyph.BackgroundTransparency = 1
+    logoGlyph.Text = "1NXS"
+    logoGlyph.TextColor3 = C.AccentBright
+    logoGlyph.Font = C.Font
+    logoGlyph.TextSize = 22
+    logoGlyph.Parent = logoBadge
 
     local titleFix = Instance.new("Frame")
     titleFix.Size = UDim2.new(1, 0, 0, 12)
     titleFix.Position = UDim2.new(0, 0, 1, -12)
     titleFix.BackgroundColor3 = C.Bg2
-    titleFix.BackgroundTransparency = 0.2
+    titleFix.BackgroundTransparency = 0.15
     titleFix.BorderSizePixel = 0
     titleFix.Parent = titleBar
 
@@ -1054,21 +1075,21 @@ local function buildHub()
     titleLine.Parent = titleBar
 
     local titleTxt = Instance.new("TextLabel")
-    titleTxt.Size = UDim2.new(0, 220, 0, 18)
-    titleTxt.Position = UDim2.new(0, 16, 0, 6)
+    titleTxt.Size = UDim2.new(0, 250, 0, 20)
+    titleTxt.Position = UDim2.new(0, 60, 0, 8)
     titleTxt.BackgroundTransparency = 1
     titleTxt.Text = "DEMONOLOGY HUB"
     titleTxt.TextColor3 = C.Text1
     titleTxt.Font = C.Font
-    titleTxt.TextSize = 15
+    titleTxt.TextSize = 16
     titleTxt.TextXAlignment = Enum.TextXAlignment.Left
     titleTxt.Parent = titleBar
 
     local subtitleTxt = Instance.new("TextLabel")
-    subtitleTxt.Size = UDim2.new(0, 200, 0, 12)
-    subtitleTxt.Position = UDim2.new(0, 16, 0, 25)
+    subtitleTxt.Size = UDim2.new(0, 240, 0, 12)
+    subtitleTxt.Position = UDim2.new(0, 60, 0, 28)
     subtitleTxt.BackgroundTransparency = 1
-    subtitleTxt.Text = "1nxs · v4.5"
+    subtitleTxt.Text = "1nxs - v5.0"
     subtitleTxt.TextColor3 = C.Text3
     subtitleTxt.Font = C.FontReg
     subtitleTxt.TextSize = 10
@@ -1077,9 +1098,9 @@ local function buildHub()
 
     local statusBadge = Instance.new("TextLabel")
     statusBadge.Size = UDim2.new(0, 72, 0, 20)
-    statusBadge.Position = UDim2.new(1, -184, 0.5, -10)
+    statusBadge.Position = UDim2.new(1, -200, 0.5, -10)
     statusBadge.BackgroundColor3 = C.Bg4
-    statusBadge.BackgroundTransparency = 0.25
+    statusBadge.BackgroundTransparency = 0.18
     statusBadge.BorderSizePixel = 0
     statusBadge.Text = "0 active"
     statusBadge.TextColor3 = C.AccentBright
@@ -1092,24 +1113,25 @@ local function buildHub()
     local function makeBtn(name, text, col, posX)
         local btn = Instance.new("TextButton")
         btn.Name = name
-        btn.Size = UDim2.new(0, 26, 0, 26)
-        btn.Position = UDim2.new(1, posX, 0.5, -13)
-        btn.BackgroundColor3 = col
-        btn.BackgroundTransparency = 0.9
+        btn.Size = UDim2.new(0, 34, 0, 34)
+        btn.Position = UDim2.new(1, posX, 0.5, -17)
+        btn.BackgroundColor3 = C.Bg3
+        btn.BackgroundTransparency = 0.12
         btn.BorderSizePixel = 0
         btn.Text = text
         btn.TextColor3 = col
         btn.Font = C.Font
-        btn.TextSize = 12
+        btn.TextSize = 14
         btn.Parent = titleBar
-        corner(btn, UDim.new(0, 6))
-        btn.MouseEnter:Connect(function() tw(btn, {BackgroundTransparency = 0.5}, C.SpeedFast) end)
-        btn.MouseLeave:Connect(function() tw(btn, {BackgroundTransparency = 0.9}, C.SpeedFast) end)
+        corner(btn, UDim.new(0, 8))
+        stroke(btn, C.AccentDim, 1, 0.7)
+        btn.MouseEnter:Connect(function() tw(btn, {BackgroundTransparency = 0}, C.SpeedFast) end)
+        btn.MouseLeave:Connect(function() tw(btn, {BackgroundTransparency = 0.12}, C.SpeedFast) end)
         return btn
     end
 
-    local closeBtn = makeBtn("Close", "✕", C.Red, -36)
-    local minBtn   = makeBtn("Min",   "─", C.Yellow, -66)
+    local closeBtn = makeBtn("Close", "×", C.Red, -46)
+    local minBtn   = makeBtn("Min",   "▢", C.Text2, -86)
 
     -- dragging
     local dragging, dragStart, startPos
@@ -1138,78 +1160,165 @@ local function buildHub()
 
     -- SIDEBAR
     local sidebar = Instance.new("Frame")
-    sidebar.Size = UDim2.new(0, 120, 1, -45)
-    sidebar.Position = UDim2.new(0, 0, 0, 45)
+    sidebar.Size = UDim2.new(0, 104, 1, -54)
+    sidebar.Position = UDim2.new(0, 0, 0, 54)
     sidebar.BackgroundColor3 = C.Bg2
-    sidebar.BackgroundTransparency = 0.25
+    sidebar.BackgroundTransparency = 0.15
     sidebar.BorderSizePixel = 0
     sidebar.Parent = MainFrame
 
     local sideLayout = Instance.new("UIListLayout")
-    sideLayout.Padding = UDim.new(0, 2)
+    sideLayout.Padding = UDim.new(0, 4)
     sideLayout.SortOrder = Enum.SortOrder.LayoutOrder
     sideLayout.Parent = sidebar
-    pad(sidebar, 8, 8, 6, 6)
+    pad(sidebar, 8, 8, 8, 8)
 
     local categories = {
-        {name="ESP",       icon="👁",   order=1},
-        {name="Evidence",  icon="🔍",   order=2},
-        {name="Ghost ID",  icon="👻",   order=3},
-        {name="Abilities", icon="⚡",   order=4},
-        {name="Survival",  icon="🛡",   order=5},
-        {name="Visual",    icon="✨",   order=6},
-        {name="Tools",     icon="⚙",    order=7},
+        {name="ESP",       icon="ESP",   order=1},
+        {name="Evidence",  icon="EVID",  order=2},
+        {name="Ghost ID",  icon="GHOST", order=3},
+        {name="Abilities", icon="ABIL",  order=4},
+        {name="Survival",  icon="SURV",  order=5},
+        {name="Visual",    icon="VIS",   order=6},
+        {name="Tools",     icon="TOOLS", order=7},
+        {name="Config",    icon="CFG",   order=8},
     }
 
     local sideBtns = {}
-    local currentCat = "ESP"
+    local currentCat = "Home"
+
+    local homeBtn = Instance.new("TextButton")
+    homeBtn.Size = UDim2.new(1, 0, 0, 34)
+    homeBtn.BackgroundColor3 = C.Bg3
+    homeBtn.BackgroundTransparency = 0.18
+    homeBtn.BorderSizePixel = 0
+    homeBtn.Text = ""
+    homeBtn.LayoutOrder = 0
+    homeBtn.Parent = sidebar
+    corner(homeBtn, UDim.new(0, 6))
+    stroke(homeBtn, C.AccentDim, 1, 0.75)
+
+    local homeIco = Instance.new("TextLabel")
+    homeIco.Size = UDim2.new(0, 36, 1, 0)
+    homeIco.Position = UDim2.new(0, 8, 0, 0)
+    homeIco.BackgroundTransparency = 1
+    homeIco.Text = "HOME"
+    homeIco.TextColor3 = C.Text2
+    homeIco.Font = C.FontMed
+    homeIco.TextSize = 10
+    homeIco.Parent = homeBtn
+
+    local homeLbl = Instance.new("TextLabel")
+    homeLbl.Name = "Lbl"
+    homeLbl.Size = UDim2.new(1, -34, 1, 0)
+    homeLbl.Position = UDim2.new(0, 44, 0, 0)
+    homeLbl.BackgroundTransparency = 1
+    homeLbl.Text = "Home"
+    homeLbl.TextColor3 = C.Text2
+    homeLbl.Font = C.FontMed
+    homeLbl.TextSize = 10
+    homeLbl.TextXAlignment = Enum.TextXAlignment.Left
+    homeLbl.Parent = homeBtn
+
+    sideBtns["Home"] = {button = homeBtn, label = homeLbl}
+    homeBtn.MouseEnter:Connect(function()
+        if currentCat ~= "Home" then tw(homeBtn, {BackgroundTransparency = 0.08}, C.SpeedFast) end
+    end)
+    homeBtn.MouseLeave:Connect(function()
+        if currentCat ~= "Home" then tw(homeBtn, {BackgroundTransparency = 0.18}, C.SpeedFast) end
+    end)
 
     for _, cat in ipairs(categories) do
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 0, 34)
-        btn.BackgroundColor3 = C.Accent
-        btn.BackgroundTransparency = 1
+        btn.BackgroundColor3 = C.Bg3
+        btn.BackgroundTransparency = 0.18
         btn.BorderSizePixel = 0
         btn.Text = ""
         btn.LayoutOrder = cat.order
         btn.Parent = sidebar
         corner(btn, UDim.new(0, 6))
+        stroke(btn, C.AccentDim, 1, 0.75)
 
         local ico = Instance.new("TextLabel")
-        ico.Size = UDim2.new(0, 24, 1, 0)
-        ico.Position = UDim2.new(0, 6, 0, 0)
+        ico.Size = UDim2.new(0, 36, 1, 0)
+        ico.Position = UDim2.new(0, 8, 0, 0)
         ico.BackgroundTransparency = 1
         ico.Text = cat.icon
-        ico.TextSize = 13
+        ico.TextColor3 = C.Text2
+        ico.Font = C.FontMed
+        ico.TextSize = 10
         ico.Parent = btn
 
         local lbl = Instance.new("TextLabel")
         lbl.Name = "Lbl"
         lbl.Size = UDim2.new(1, -34, 1, 0)
-        lbl.Position = UDim2.new(0, 32, 0, 0)
+        lbl.Position = UDim2.new(0, 44, 0, 0)
         lbl.BackgroundTransparency = 1
         lbl.Text = cat.name
         lbl.TextColor3 = C.Text2
         lbl.Font = C.FontMed
-        lbl.TextSize = 11
+        lbl.TextSize = 10
         lbl.TextXAlignment = Enum.TextXAlignment.Left
         lbl.Parent = btn
 
         sideBtns[cat.name] = {button = btn, label = lbl}
 
         btn.MouseEnter:Connect(function()
-            if currentCat ~= cat.name then tw(btn, {BackgroundTransparency = 0.88}, C.SpeedFast) end
+            if currentCat ~= cat.name then tw(btn, {BackgroundTransparency = 0.08}, C.SpeedFast) end
         end)
         btn.MouseLeave:Connect(function()
-            if currentCat ~= cat.name then tw(btn, {BackgroundTransparency = 1}, C.SpeedFast) end
+            if currentCat ~= cat.name then tw(btn, {BackgroundTransparency = 0.18}, C.SpeedFast) end
         end)
     end
+
+    local profileTile = Instance.new("Frame")
+    profileTile.Size = UDim2.new(1, -16, 0, 72)
+    profileTile.Position = UDim2.new(0, 8, 1, -80)
+    profileTile.BackgroundColor3 = C.Bg3
+    profileTile.BackgroundTransparency = 0.1
+    profileTile.BorderSizePixel = 0
+    profileTile.Parent = sidebar
+    corner(profileTile, UDim.new(0, 10))
+    stroke(profileTile, C.AccentDim, 1, 0.8)
+
+    local profileAvatar = Instance.new("ImageLabel")
+    profileAvatar.Size = UDim2.new(0, 40, 0, 40)
+    profileAvatar.Position = UDim2.new(0, 12, 0.5, -20)
+    profileAvatar.BackgroundColor3 = C.Bg4
+    profileAvatar.BackgroundTransparency = 0.05
+    profileAvatar.BorderSizePixel = 0
+    profileAvatar.Image = string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=150&h=150", LocalPlayer.UserId)
+    profileAvatar.Parent = profileTile
+    corner(profileAvatar, UDim.new(1, 0))
+
+    local profileName = Instance.new("TextLabel")
+    profileName.Size = UDim2.new(1, -66, 0, 16)
+    profileName.Position = UDim2.new(0, 58, 0, 16)
+    profileName.BackgroundTransparency = 1
+    profileName.Text = LocalPlayer.DisplayName or LocalPlayer.Name
+    profileName.TextColor3 = C.Text1
+    profileName.Font = C.FontMed
+    profileName.TextSize = 10
+    profileName.TextXAlignment = Enum.TextXAlignment.Left
+    profileName.Parent = profileTile
+
+    local profileTag = Instance.new("TextLabel")
+    profileTag.Size = UDim2.new(1, -66, 0, 12)
+    profileTag.Position = UDim2.new(0, 58, 0, 34)
+    profileTag.BackgroundTransparency = 1
+    profileTag.Text = "Home"
+    profileTag.TextColor3 = C.Text3
+    profileTag.Font = C.FontReg
+    profileTag.TextSize = 9
+    profileTag.TextXAlignment = Enum.TextXAlignment.Left
+    profileTag.Parent = profileTile
 
     -- CONTENT AREA
     local content = Instance.new("Frame")
     content.Name = "Content"
-    content.Size = UDim2.new(1, -124, 1, -45)
-    content.Position = UDim2.new(0, 124, 0, 45)
+    content.Size = UDim2.new(1, -104, 1, -54)
+    content.Position = UDim2.new(0, 104, 0, 54)
     content.BackgroundTransparency = 1
     content.BorderSizePixel = 0
     content.ClipsDescendants = true
@@ -1262,9 +1371,424 @@ local function buildHub()
         hdr.TextXAlignment = Enum.TextXAlignment.Left
         hdr.LayoutOrder = 0
         hdr.Parent = pg
+        if name == "Home" then
+            hdr.Size = UDim2.new(1, 0, 0, 0)
+            hdr.Visible = false
+        end
 
         pages[name] = pg
         return pg
+    end
+
+    local homePage = makePage("Home")
+    local homeRoot = Instance.new("Frame")
+    homeRoot.Size = UDim2.new(1, 0, 0, 0)
+    homeRoot.BackgroundTransparency = 1
+    homeRoot.BorderSizePixel = 0
+    homeRoot.AutomaticSize = Enum.AutomaticSize.Y
+    homeRoot.LayoutOrder = 1
+    homeRoot.Parent = homePage
+
+    local homeLayout = Instance.new("UIListLayout")
+    homeLayout.Padding = UDim.new(0, 8)
+    homeLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    homeLayout.Parent = homeRoot
+
+    local runStart = os.clock()
+    local homeServerValue, homeOnlineValue, homeOfflineValue, homeAllValue
+    local homeElapsedValue
+
+    local function panel(frame, height, bg, trans)
+        frame.Size = UDim2.new(1, 0, 0, height)
+        frame.BackgroundColor3 = bg or C.Bg3
+        frame.BackgroundTransparency = trans or 0.18
+        frame.BorderSizePixel = 0
+        corner(frame, UDim.new(0, 10))
+        stroke(frame, C.AccentDim, 1, 0.75)
+        return frame
+    end
+
+    local hero = panel(Instance.new("Frame"), 130, C.Bg3, 0.12)
+    hero.LayoutOrder = 1
+    hero.Parent = homeRoot
+
+    local heroAvatar = Instance.new("ImageLabel")
+    heroAvatar.Size = UDim2.new(0, 92, 0, 92)
+    heroAvatar.Position = UDim2.new(0, 18, 0, 19)
+    heroAvatar.BackgroundColor3 = C.Bg4
+    heroAvatar.BackgroundTransparency = 0.04
+    heroAvatar.BorderSizePixel = 0
+    heroAvatar.Image = string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=150&h=150", LocalPlayer.UserId)
+    heroAvatar.Parent = hero
+    corner(heroAvatar, UDim.new(0, 12))
+
+    local heroName = Instance.new("TextLabel")
+    heroName.Size = UDim2.new(1, -140, 0, 28)
+    heroName.Position = UDim2.new(0, 126, 0, 34)
+    heroName.BackgroundTransparency = 1
+    heroName.Text = "Hello, " .. (LocalPlayer.DisplayName or LocalPlayer.Name)
+    heroName.TextColor3 = C.Text1
+    heroName.Font = C.Font
+    heroName.TextSize = 22
+    heroName.TextXAlignment = Enum.TextXAlignment.Left
+    heroName.Parent = hero
+
+    local heroSub = Instance.new("TextLabel")
+    heroSub.Size = UDim2.new(1, -140, 0, 18)
+    heroSub.Position = UDim2.new(0, 126, 0, 66)
+    heroSub.BackgroundTransparency = 1
+    heroSub.Text = "1nxs - Demonology Hub"
+    heroSub.TextColor3 = C.Text2
+    heroSub.Font = C.FontReg
+    heroSub.TextSize = 12
+    heroSub.TextXAlignment = Enum.TextXAlignment.Left
+    heroSub.Parent = hero
+
+    local heroChip = Instance.new("Frame")
+    heroChip.Size = UDim2.new(0, 150, 0, 44)
+    heroChip.Position = UDim2.new(1, -168, 0, 18)
+    heroChip.BackgroundColor3 = C.Bg4
+    heroChip.BackgroundTransparency = 0.2
+    heroChip.BorderSizePixel = 0
+    heroChip.Parent = hero
+    corner(heroChip, UDim.new(0, 10))
+
+    local heroChipTitle = Instance.new("TextLabel")
+    heroChipTitle.Size = UDim2.new(1, -16, 0, 16)
+    heroChipTitle.Position = UDim2.new(0, 8, 0, 7)
+    heroChipTitle.BackgroundTransparency = 1
+    heroChipTitle.Text = "Active session"
+    heroChipTitle.TextColor3 = C.Text1
+    heroChipTitle.Font = C.FontMed
+    heroChipTitle.TextSize = 11
+    heroChipTitle.TextXAlignment = Enum.TextXAlignment.Left
+    heroChipTitle.Parent = heroChip
+
+    homeElapsedValue = Instance.new("TextLabel")
+    homeElapsedValue.Size = UDim2.new(1, -16, 0, 14)
+    homeElapsedValue.Position = UDim2.new(0, 8, 0, 22)
+    homeElapsedValue.BackgroundTransparency = 1
+    homeElapsedValue.Text = "00:00:00"
+    homeElapsedValue.TextColor3 = C.Text2
+    homeElapsedValue.Font = C.FontReg
+    homeElapsedValue.TextSize = 10
+    homeElapsedValue.TextXAlignment = Enum.TextXAlignment.Left
+    homeElapsedValue.Parent = heroChip
+
+    local row1 = Instance.new("Frame")
+    row1.Size = UDim2.new(1, 0, 0, 88)
+    row1.BackgroundTransparency = 1
+    row1.BorderSizePixel = 0
+    row1.LayoutOrder = 2
+    row1.Parent = homeRoot
+
+    local row1Layout = Instance.new("UIGridLayout")
+    row1Layout.CellSize = UDim2.new(0.5, -4, 1, 0)
+    row1Layout.CellPadding = UDim2.new(0, 8, 0, 0)
+    row1Layout.FillDirectionMaxCells = 2
+    row1Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    row1Layout.Parent = row1
+
+    local serverCard = panel(Instance.new("Frame"), 88, C.Bg3, 0.2)
+    serverCard.Parent = row1
+
+    local serverAccent = Instance.new("Frame")
+    serverAccent.Size = UDim2.new(0, 4, 1, -20)
+    serverAccent.Position = UDim2.new(0, 12, 0, 10)
+    serverAccent.BackgroundColor3 = C.Green
+    serverAccent.BorderSizePixel = 0
+    serverAccent.Parent = serverCard
+    corner(serverAccent, UDim.new(1, 0))
+
+    local serverTitle = Instance.new("TextLabel")
+    serverTitle.Size = UDim2.new(1, -34, 0, 18)
+    serverTitle.Position = UDim2.new(0, 24, 0, 14)
+    serverTitle.BackgroundTransparency = 1
+    serverTitle.Text = "In server for"
+    serverTitle.TextColor3 = C.Text1
+    serverTitle.Font = C.FontMed
+    serverTitle.TextSize = 12
+    serverTitle.TextXAlignment = Enum.TextXAlignment.Left
+    serverTitle.Parent = serverCard
+
+    homeServerValue = Instance.new("TextLabel")
+    homeServerValue.Size = UDim2.new(1, -34, 0, 18)
+    homeServerValue.Position = UDim2.new(0, 24, 0, 36)
+    homeServerValue.BackgroundTransparency = 1
+    homeServerValue.Text = "00:00:00"
+    homeServerValue.TextColor3 = C.Text2
+    homeServerValue.Font = C.FontReg
+    homeServerValue.TextSize = 11
+    homeServerValue.TextXAlignment = Enum.TextXAlignment.Left
+    homeServerValue.Parent = serverCard
+
+    local joinCard = panel(Instance.new("Frame"), 88, C.Bg3, 0.2)
+    joinCard.Parent = row1
+    local joinAccent = Instance.new("Frame")
+    joinAccent.Size = UDim2.new(0, 4, 1, -20)
+    joinAccent.Position = UDim2.new(0, 12, 0, 10)
+    joinAccent.BackgroundColor3 = C.Accent
+    joinAccent.BorderSizePixel = 0
+    joinAccent.Parent = joinCard
+    corner(joinAccent, UDim.new(1, 0))
+
+    local joinTitle = Instance.new("TextLabel")
+    joinTitle.Size = UDim2.new(1, -34, 0, 18)
+    joinTitle.Position = UDim2.new(0, 24, 0, 14)
+    joinTitle.BackgroundTransparency = 1
+    joinTitle.Text = "Join Script"
+    joinTitle.TextColor3 = C.Text1
+    joinTitle.Font = C.FontMed
+    joinTitle.TextSize = 12
+    joinTitle.TextXAlignment = Enum.TextXAlignment.Left
+    joinTitle.Parent = joinCard
+
+    local joinDesc = Instance.new("TextLabel")
+    joinDesc.Size = UDim2.new(1, -34, 0, 18)
+    joinDesc.Position = UDim2.new(0, 24, 0, 36)
+    joinDesc.BackgroundTransparency = 1
+    joinDesc.Text = "Tap to copy join script"
+    joinDesc.TextColor3 = C.Text2
+    joinDesc.Font = C.FontReg
+    joinDesc.TextSize = 11
+    joinDesc.TextXAlignment = Enum.TextXAlignment.Left
+    joinDesc.Parent = joinCard
+
+    local row2 = Instance.new("Frame")
+    row2.Size = UDim2.new(1, 0, 0, 150)
+    row2.BackgroundTransparency = 1
+    row2.BorderSizePixel = 0
+    row2.LayoutOrder = 3
+    row2.Parent = homeRoot
+
+    local row2Layout = Instance.new("UIGridLayout")
+    row2Layout.CellSize = UDim2.new(0.5, -4, 1, 0)
+    row2Layout.CellPadding = UDim2.new(0, 8, 0, 0)
+    row2Layout.FillDirectionMaxCells = 2
+    row2Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    row2Layout.Parent = row2
+
+    local discordCard = panel(Instance.new("Frame"), 150, C.Bg3, 0.2)
+    discordCard.Parent = row2
+    local discordGrad = Instance.new("UIGradient")
+    discordGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(78, 90, 230)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 28)),
+    })
+    discordGrad.Rotation = 0
+    discordGrad.Parent = discordCard
+
+    local discordTitle = Instance.new("TextLabel")
+    discordTitle.Size = UDim2.new(1, -20, 0, 24)
+    discordTitle.Position = UDim2.new(0, 16, 0, 18)
+    discordTitle.BackgroundTransparency = 1
+    discordTitle.Text = "Discord"
+    discordTitle.TextColor3 = C.Text1
+    discordTitle.Font = C.Font
+    discordTitle.TextSize = 22
+    discordTitle.TextXAlignment = Enum.TextXAlignment.Left
+    discordTitle.Parent = discordCard
+
+    local discordDesc = Instance.new("TextLabel")
+    discordDesc.Size = UDim2.new(1, -20, 0, 22)
+    discordDesc.Position = UDim2.new(0, 16, 0, 52)
+    discordDesc.BackgroundTransparency = 1
+    discordDesc.Text = "Click to join Discord"
+    discordDesc.TextColor3 = C.AccentBright
+    discordDesc.Font = C.FontReg
+    discordDesc.TextSize = 14
+    discordDesc.TextXAlignment = Enum.TextXAlignment.Left
+    discordDesc.Parent = discordCard
+
+    local discordClick = Instance.new("TextButton")
+    discordClick.Size = UDim2.new(1, 0, 1, 0)
+    discordClick.BackgroundTransparency = 1
+    discordClick.Text = ""
+    discordClick.Parent = discordCard
+    discordClick.MouseButton1Click:Connect(function()
+        local invite = "https://discord.gg/EAU6kf5CMA"
+        if type(setclipboard) == "function" then
+            pcall(setclipboard, invite)
+            notify("Discord invite copied", C.Green, 3)
+        else
+            notify("Discord invite: " .. invite, C.AccentBright, 4)
+        end
+    end)
+
+    local statsCard = panel(Instance.new("Frame"), 150, C.Bg3, 0.2)
+    statsCard.Parent = row2
+
+    local statsLayout = Instance.new("UIGridLayout")
+    statsLayout.CellSize = UDim2.new(0.5, -4, 0.5, -4)
+    statsLayout.CellPadding = UDim2.new(0, 8, 0, 8)
+    statsLayout.FillDirectionMaxCells = 2
+    statsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    statsLayout.Parent = statsCard
+
+    local function makeStat(parent, title)
+        local stat = Instance.new("Frame")
+        stat.Size = UDim2.new(1, 0, 1, 0)
+        stat.BackgroundColor3 = C.Bg4
+        stat.BackgroundTransparency = 0.18
+        stat.BorderSizePixel = 0
+        stat.Parent = parent
+        corner(stat, UDim.new(0, 8))
+        local statTitle = Instance.new("TextLabel")
+        statTitle.Size = UDim2.new(1, -16, 0, 16)
+        statTitle.Position = UDim2.new(0, 8, 0, 10)
+        statTitle.BackgroundTransparency = 1
+        statTitle.Text = title
+        statTitle.TextColor3 = C.Text1
+        statTitle.Font = C.FontMed
+        statTitle.TextSize = 11
+        statTitle.TextXAlignment = Enum.TextXAlignment.Left
+        statTitle.Parent = stat
+        local statValue = Instance.new("TextLabel")
+        statValue.Size = UDim2.new(1, -16, 0, 16)
+        statValue.Position = UDim2.new(0, 8, 0, 30)
+        statValue.BackgroundTransparency = 1
+        statValue.Text = "0"
+        statValue.TextColor3 = C.Text2
+        statValue.Font = C.FontReg
+        statValue.TextSize = 11
+        statValue.TextXAlignment = Enum.TextXAlignment.Left
+        statValue.Parent = stat
+        return statValue
+    end
+
+    homeServerValue.Text = "0 players"
+    homeOnlineValue = makeStat(statsCard, "Online")
+    homeOfflineValue = makeStat(statsCard, "Offline")
+    homeAllValue = makeStat(statsCard, "All")
+    local inServerValue = makeStat(statsCard, "In Server")
+
+    local function updateHomeStats()
+        local elapsed = math.max(0, math.floor(os.clock() - runStart))
+        local hh = math.floor(elapsed / 3600)
+        local mm = math.floor((elapsed % 3600) / 60)
+        local ss = elapsed % 60
+        local elapsedText = string.format("%02d:%02d:%02d", hh, mm, ss)
+        if homeElapsedValue then homeElapsedValue.Text = elapsedText end
+        if inServerValue then inServerValue.Text = tostring(#Players:GetPlayers()) .. " players" end
+
+        local online, offline, total = 0, 0, 0
+        pcall(function()
+            local friends = LocalPlayer:GetFriendsOnline()
+            if type(friends) == "table" then
+                for _, friend in ipairs(friends) do
+                    total += 1
+                    if friend.IsOnline then
+                        online += 1
+                    else
+                        offline += 1
+                    end
+                end
+            end
+        end)
+        if homeOnlineValue then homeOnlineValue.Text = tostring(online) .. " friends" end
+        if homeOfflineValue then homeOfflineValue.Text = tostring(offline) .. " friends" end
+        if homeAllValue then homeAllValue.Text = tostring(total) .. " friends" end
+        if homeServerValue then homeServerValue.Text = elapsedText end
+    end
+
+    updateHomeStats()
+    task.spawn(function()
+        while Hub and Hub.Parent do
+            task.wait(1)
+            updateHomeStats()
+        end
+    end)
+
+    local function sanitizeProfileName(name)
+        name = tostring(name or "")
+        name = name:gsub("^%s+", ""):gsub("%s+$", "")
+        name = name:gsub("[^%w%-%_ ]", "")
+        name = name:gsub("%s+", "_")
+        if #name > 24 then name = name:sub(1, 24) end
+        return name
+    end
+
+    local function canUseFileApi()
+        return type(writefile) == "function" and type(readfile) == "function" and type(isfile) == "function"
+    end
+
+    local function profilePath(name)
+        return "1nxs_hub_profile_" .. sanitizeProfileName(name) .. ".json"
+    end
+
+    local AUTOLOAD_FILE = "1nxs_hub_autoload.json"
+
+    local function snapshotFeatures()
+        local out = {}
+        for featureName, enabled in pairs(S.Features) do
+            out[featureName] = enabled and true or false
+        end
+        return out
+    end
+
+    local function saveProfile(name)
+        if not canUseFileApi() then return false, "File API unavailable" end
+        local clean = sanitizeProfileName(name)
+        if clean == "" then return false, "Enter a profile name" end
+        local payload = {name = clean, features = snapshotFeatures(), savedAt = os.time()}
+        writefile(profilePath(clean), HttpService:JSONEncode(payload))
+        return true, clean
+    end
+
+    local function loadProfile(name, silent)
+        if not canUseFileApi() then return false, "File API unavailable" end
+        local clean = sanitizeProfileName(name)
+        if clean == "" then return false, "Enter a profile name" end
+        local path = profilePath(clean)
+        if not isfile(path) then return false, "Profile not found" end
+        local ok, data = pcall(function()
+            return HttpService:JSONDecode(readfile(path))
+        end)
+        if not ok or type(data) ~= "table" or type(data.features) ~= "table" then
+            return false, "Profile file is invalid"
+        end
+        S._configLoading = true
+        for featureName, ctrl in pairs(S._toggleControls) do
+            local target = data.features[featureName]
+            if target ~= nil then
+                ctrl.set(target, true)
+            end
+        end
+        S._configLoading = false
+        updateCount()
+        if not silent then
+            notify("Loaded profile: " .. clean, C.Green, 3)
+        end
+        return true, clean
+    end
+
+    local function deleteProfile(name)
+        if not canUseFileApi() then return false, "File API unavailable" end
+        local clean = sanitizeProfileName(name)
+        if clean == "" then return false, "Enter a profile name" end
+        local path = profilePath(clean)
+        if not isfile(path) then return false, "Profile not found" end
+        delfile(path)
+        return true, clean
+    end
+
+    local function saveAutoload(name, enabled)
+        if not canUseFileApi() then return false, "File API unavailable" end
+        local clean = sanitizeProfileName(name)
+        if clean == "" then return false, "Enter a profile name" end
+        writefile(AUTOLOAD_FILE, HttpService:JSONEncode({enabled = enabled and true or false, profile = clean}))
+        return true, clean
+    end
+
+    local function loadAutoload()
+        if not canUseFileApi() or not isfile(AUTOLOAD_FILE) then return nil end
+        local ok, data = pcall(function()
+            return HttpService:JSONDecode(readfile(AUTOLOAD_FILE))
+        end)
+        if ok and type(data) == "table" then
+            return data
+        end
+        return nil
     end
 
     local function makeToggle(parent, name, desc, order, callback)
@@ -1328,11 +1852,11 @@ local function buildHub()
                 if v then
                     tw(pill, {BackgroundColor3 = C.Accent}, C.SpeedFast)
                     tw(circ, {Position = UDim2.new(0, 20, 0.5, -8), BackgroundColor3 = C.Text1}, C.SpeedFast)
-                    tw(nm,   {TextColor3 = C.AccentBright}, C.SpeedFast)
+                    tw(nm, {TextColor3 = C.AccentBright}, C.SpeedFast)
                 else
                     tw(pill, {BackgroundColor3 = C.Bg4}, C.SpeedFast)
                     tw(circ, {Position = UDim2.new(0, 2, 0.5, -8), BackgroundColor3 = C.Text2}, C.SpeedFast)
-                    tw(nm,   {TextColor3 = C.Text1}, C.SpeedFast)
+                    tw(nm, {TextColor3 = C.Text1}, C.SpeedFast)
                 end
             else
                 pill.BackgroundColor3 = v and C.Accent or C.Bg4
@@ -1342,6 +1866,34 @@ local function buildHub()
             end
         end
 
+        local function setState(v, silent)
+            v = not not v
+            if on == v then
+                S.Features[name] = on
+                setVisual(on, false)
+                updateCount()
+                return
+            end
+            on = v
+            S.Features[name] = on
+            setVisual(on, true)
+            updateCount()
+            local ok, err = pcall(callback, on)
+            if not ok then
+                warn("[Hub] Error in " .. name .. ":", err)
+                if not silent then
+                    notify("⚠ " .. name .. " error", C.Red, 4)
+                end
+            elseif not silent then
+                notify(name .. " → " .. (on and "ON" or "OFF"), on and C.Green or C.Text3, 2)
+            end
+        end
+
+        S._toggleControls[name] = {
+            get = function() return on end,
+            set = setState,
+        }
+
         local click = Instance.new("TextButton")
         click.Size = UDim2.new(1, 0, 1, 0)
         click.BackgroundTransparency = 1
@@ -1349,23 +1901,12 @@ local function buildHub()
         click.Parent = cont
 
         click.MouseButton1Click:Connect(function()
-            on = not on
-            S.Features[name] = on
-            setVisual(on, true)
-            updateCount()
-            local ok, err = pcall(callback, on)
-            if not ok then
-                warn("[Hub] Error in " .. name .. ":", err)
-                notify("⚠ " .. name .. " error", C.Red, 4)
-            else
-                notify(name .. " → " .. (on and "ON" or "OFF"), on and C.Green or C.Text3, 2)
-            end
+            setState(not on, false)
         end)
 
         return cont
     end
 
-    -- ═══════════════════════════════════════
     --   PAGE: ESP
     -- ═══════════════════════════════════════
     local espPage = makePage("ESP")
@@ -2047,7 +2588,7 @@ local function buildHub()
     evidTitle.Size = UDim2.new(1, 0, 0, 16)
     evidTitle.Position = UDim2.new(0, 10, 0, 4)
     evidTitle.BackgroundTransparency = 1
-    evidTitle.Text = "FOUND EVIDENCE (tap to toggle)"
+    evidTitle.Text = "Found evidences:"
     evidTitle.TextColor3 = C.AccentDim
     evidTitle.Font = C.Font
     evidTitle.TextSize = 9
@@ -2121,7 +2662,7 @@ local function buildHub()
     local ghostResultsTitle = Instance.new("TextLabel")
     ghostResultsTitle.Size = UDim2.new(1, 0, 0, 16)
     ghostResultsTitle.BackgroundTransparency = 1
-    ghostResultsTitle.Text = "POSSIBLE GHOSTS"
+    ghostResultsTitle.Text = "Found evidences:"
     ghostResultsTitle.TextColor3 = C.AccentDim
     ghostResultsTitle.Font = C.Font
     ghostResultsTitle.TextSize = 9
@@ -2743,6 +3284,182 @@ local function buildHub()
     end)
 
     -- ═══════════════════════════════════════
+    -- CONFIGURATION PAGE
+    local configPage = makePage("Config")
+    local configRoot = Instance.new("Frame")
+    configRoot.Size = UDim2.new(1, 0, 0, 0)
+    configRoot.BackgroundTransparency = 1
+    configRoot.BorderSizePixel = 0
+    configRoot.AutomaticSize = Enum.AutomaticSize.Y
+    configRoot.LayoutOrder = 1
+    configRoot.Parent = configPage
+
+    local configLayout = Instance.new("UIListLayout")
+    configLayout.Padding = UDim.new(0, 8)
+    configLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    configLayout.Parent = configRoot
+
+    local configPanel = panel(Instance.new("Frame"), 196, C.Bg3, 0.12)
+    configPanel.LayoutOrder = 1
+    configPanel.Parent = configRoot
+
+    local configTitle = Instance.new("TextLabel")
+    configTitle.Size = UDim2.new(1, -20, 0, 20)
+    configTitle.Position = UDim2.new(0, 12, 0, 12)
+    configTitle.BackgroundTransparency = 1
+    configTitle.Text = "Configuration"
+    configTitle.TextColor3 = C.Text1
+    configTitle.Font = C.Font
+    configTitle.TextSize = 18
+    configTitle.TextXAlignment = Enum.TextXAlignment.Left
+    configTitle.Parent = configPanel
+
+    local configSub = Instance.new("TextLabel")
+    configSub.Size = UDim2.new(1, -20, 0, 16)
+    configSub.Position = UDim2.new(0, 12, 0, 34)
+    configSub.BackgroundTransparency = 1
+    configSub.Text = "Save profiles, load them later, or keep one on autoload."
+    configSub.TextColor3 = C.Text3
+    configSub.Font = C.FontReg
+    configSub.TextSize = 11
+    configSub.TextXAlignment = Enum.TextXAlignment.Left
+    configSub.Parent = configPanel
+
+    local profileNameBox = Instance.new("TextBox")
+    profileNameBox.Size = UDim2.new(1, -24, 0, 34)
+    profileNameBox.Position = UDim2.new(0, 12, 0, 58)
+    profileNameBox.BackgroundColor3 = C.Bg4
+    profileNameBox.BackgroundTransparency = 0.12
+    profileNameBox.BorderSizePixel = 0
+    profileNameBox.ClearTextOnFocus = false
+    profileNameBox.PlaceholderText = "Profile name"
+    profileNameBox.Text = ""
+    profileNameBox.TextColor3 = C.Text1
+    profileNameBox.PlaceholderColor3 = C.Text3
+    profileNameBox.Font = C.FontMed
+    profileNameBox.TextSize = 12
+    profileNameBox.TextXAlignment = Enum.TextXAlignment.Left
+    profileNameBox.Parent = configPanel
+    corner(profileNameBox, UDim.new(0, 8))
+    pad(profileNameBox, 10, 10, 0, 0)
+
+    local function actionButton(parent, text, x, y, w, col)
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(0, w, 0, 30)
+        b.Position = UDim2.new(0, x, 0, y)
+        b.BackgroundColor3 = col or C.Bg4
+        b.BackgroundTransparency = 0.12
+        b.BorderSizePixel = 0
+        b.Text = text
+        b.TextColor3 = C.Text1
+        b.Font = C.FontMed
+        b.TextSize = 11
+        b.Parent = parent
+        corner(b, UDim.new(0, 8))
+        stroke(b, C.AccentDim, 1, 0.75)
+        return b
+    end
+
+    local saveBtn = actionButton(configPanel, "Save", 12, 104, 84, C.Accent)
+    local loadBtn = actionButton(configPanel, "Load", 104, 104, 84, C.Bg4)
+    local deleteBtn = actionButton(configPanel, "Delete", 196, 104, 84, C.Red)
+    local autoBtn = actionButton(configPanel, "Autoload", 288, 104, 104, C.Bg4)
+
+    local configStatus = Instance.new("TextLabel")
+    configStatus.Size = UDim2.new(1, -24, 0, 16)
+    configStatus.Position = UDim2.new(0, 12, 0, 142)
+    configStatus.BackgroundTransparency = 1
+    configStatus.Text = "No profile selected"
+    configStatus.TextColor3 = C.Text2
+    configStatus.Font = C.FontReg
+    configStatus.TextSize = 11
+    configStatus.TextXAlignment = Enum.TextXAlignment.Left
+    configStatus.Parent = configPanel
+
+    local function currentProfileName()
+        return sanitizeProfileName(profileNameBox.Text)
+    end
+
+    local function refreshConfigStatus(message, color)
+        configStatus.Text = message
+        configStatus.TextColor3 = color or C.Text2
+    end
+
+    saveBtn.MouseButton1Click:Connect(function()
+        local ok, result = saveProfile(currentProfileName())
+        if ok then
+            refreshConfigStatus("Saved profile: " .. result, C.Green)
+            notify("Saved profile: " .. result, C.Green, 3)
+        else
+            refreshConfigStatus(result or "Save failed", C.Red)
+            notify(result or "Save failed", C.Red, 3)
+        end
+    end)
+
+    loadBtn.MouseButton1Click:Connect(function()
+        local ok, result = loadProfile(currentProfileName())
+        if ok then
+            refreshConfigStatus("Loaded profile: " .. result, C.Green)
+        else
+            refreshConfigStatus(result or "Load failed", C.Red)
+            notify(result or "Load failed", C.Red, 3)
+        end
+    end)
+
+    deleteBtn.MouseButton1Click:Connect(function()
+        local ok, result = deleteProfile(currentProfileName())
+        if ok then
+            refreshConfigStatus("Deleted profile: " .. result, C.Green)
+            notify("Deleted profile: " .. result, C.Green, 3)
+        else
+            refreshConfigStatus(result or "Delete failed", C.Red)
+            notify(result or "Delete failed", C.Red, 3)
+        end
+    end)
+
+    autoBtn.MouseButton1Click:Connect(function()
+        local name = currentProfileName()
+        if name == "" then
+            refreshConfigStatus("Enter a profile name first", C.Red)
+            notify("Enter a profile name first", C.Red, 3)
+            return
+        end
+        local ok, result = saveAutoload(name, true)
+        if ok then
+            refreshConfigStatus("Autoload set: " .. result, C.AccentBright)
+            notify("Autoload set: " .. result, C.AccentBright, 3)
+        else
+            refreshConfigStatus(result or "Autoload failed", C.Red)
+            notify(result or "Autoload failed", C.Red, 3)
+        end
+    end)
+
+    local autoData = loadAutoload()
+    local autoLoadEnabled = false
+    if type(autoData) == "table" and autoData.enabled and type(autoData.profile) == "string" then
+        autoLoadEnabled = true
+        profileNameBox.Text = autoData.profile
+        refreshConfigStatus("Autoload profile: " .. autoData.profile, C.AccentBright)
+        task.defer(function()
+            loadProfile(autoData.profile, true)
+        end)
+    end
+
+    makeToggle(configPage, "Auto-Load", "Apply the saved profile on startup", 2, function(on)
+        local name = currentProfileName()
+        if name == "" then
+            notify("Enter a profile name first", C.Yellow, 3)
+            S.Features["Auto-Load"] = false
+            return
+        end
+        saveAutoload(name, on)
+        refreshConfigStatus((on and "Autoload enabled: " or "Autoload disabled: ") .. name, on and C.AccentBright or C.Text2)
+    end)
+
+    if autoLoadEnabled and S._toggleControls["Auto-Load"] then
+        S._toggleControls["Auto-Load"].set(true, true)
+    end
+
     --   CATEGORY SWITCHING
     -- ═══════════════════════════════════════
     local function switchCat(name)
@@ -2750,10 +3467,10 @@ local function buildHub()
         for n, pg in pairs(pages) do pg.Visible = (n == name) end
         for n, d in pairs(sideBtns) do
             if n == name then
-                tw(d.button, {BackgroundTransparency = 0.8}, C.Speed)
+                tw(d.button, {BackgroundTransparency = 0.05}, C.Speed)
                 tw(d.label, {TextColor3 = C.AccentBright}, C.Speed)
             else
-                tw(d.button, {BackgroundTransparency = 1}, C.Speed)
+                tw(d.button, {BackgroundTransparency = 0.18}, C.Speed)
                 tw(d.label, {TextColor3 = C.Text2}, C.Speed)
             end
         end
@@ -2763,7 +3480,7 @@ local function buildHub()
     for name, d in pairs(sideBtns) do
         d.button.MouseButton1Click:Connect(function() switchCat(name) end)
     end
-    switchCat("ESP")
+    switchCat("Home")
 
     -- ═══════════════════════════════════════
     --   UPDATE FUNCTIONS
@@ -2791,7 +3508,7 @@ local function buildHub()
             gName.Size = UDim2.new(0.5, 0, 0, 16)
             gName.Position = UDim2.new(0, 10, 0, 4)
             gName.BackgroundTransparency = 1
-            gName.Text = (i == 1 and ghost.confidence > 0) and ("👻 " .. ghost.name) or ghost.name
+            gName.Text = ghost.name
             gName.TextColor3 = (i == 1 and ghost.confidence > 0) and C.Green or C.Text1
             gName.Font = C.FontMed; gName.TextSize = 12
             gName.TextXAlignment = Enum.TextXAlignment.Left; gName.Parent = gf
@@ -2892,7 +3609,7 @@ local function buildHub()
             if S.Visible then
                 MainFrame.Visible = true
                 MainFrame.BackgroundTransparency = 0.6
-                tw(MainFrame, {BackgroundTransparency = 0.12}, 0.25)
+                tw(MainFrame, {BackgroundTransparency = 0.14}, 0.25)
             else
                 tw(MainFrame, {BackgroundTransparency = 1}, 0.2)
                 task.wait(0.25)
@@ -2906,7 +3623,7 @@ local function buildHub()
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.BackgroundTransparency = 0.8
     task.wait(0.1)
-    tw(MainFrame, {BackgroundTransparency = 0.12, Size = UDim2.new(0, 620, 0, 480), Position = UDim2.new(0.5, -310, 0.5, -240)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    tw(MainFrame, {BackgroundTransparency = 0.14, Size = UDim2.new(0, 620, 0, 480), Position = UDim2.new(0.5, -310, 0.5, -240)}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
     task.wait(0.6)
     notify("🕯 Demonology Hub v5.0 loaded", C.Accent, 4)
@@ -2927,3 +3644,5 @@ showLoadingScreen(function()
 end)
 
 print("[1nxs Hub] ✅ v5.0 Loaded — fixed ghost limit, EMF, Spirit Box, Laser")
+
+
