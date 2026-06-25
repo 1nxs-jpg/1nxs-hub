@@ -1721,8 +1721,9 @@ local function buildHub()
         local hrp = char:FindFirstChild("HumanoidRootPart")
         if not hrp then return false end
         local target, bestDist = nil, math.huge
+        local myTeam = LocalPlayer.Team
         for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character then
+            if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
                 local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                 if thrp then
                     local d = (hrp.Position - thrp.Position).Magnitude
@@ -1757,7 +1758,7 @@ local function buildHub()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then return end
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
+                if p ~= LocalPlayer and p.Character and p.Team ~= LocalPlayer.Team then
                     local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if thrp and (hrp.Position - thrp.Position).Magnitude < 20 then
                         blockEvent:FireServer()
@@ -1778,8 +1779,9 @@ local function buildHub()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then return end
             local target, bestDist = nil, math.huge
+            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
+                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
                     local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if thrp then
                         local d = (hrp.Position - thrp.Position).Magnitude
@@ -1849,16 +1851,12 @@ local function buildHub()
     makeToggle(combatPage, "Auto-Ability", "Auto-use special ability on cooldown", 8, function(on)
         rmConn("autoabil")
         if not on or not useAbility then return end
-        local lastUse = 0
         addConn("autoabil", RunService.Heartbeat:Connect(function()
             if not S.Features["Auto-Ability"] then return end
-            local now = tick()
-            if now - lastUse < 5 then return end
             local plr = LocalPlayer
             local ability = plr:GetAttribute("Ability")
             if ability and ability ~= "" then
                 useAbility:FireServer("SpecialAbility")
-                lastUse = now
             end
         end))
     end)
@@ -1877,8 +1875,9 @@ local function buildHub()
             clearHL("players")
             S.Highlights["players"] = {}
             S.Billboards["players"] = {}
+            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
+                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
                     local hrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if hrp then
                         local hl = Instance.new("Highlight")
@@ -1939,8 +1938,9 @@ local function buildHub()
         local function scan()
             clearHL("rings")
             S.Highlights["rings"] = {}
+            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
+                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
                     local hrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if hrp then
                         local ring = Instance.new("Part")
@@ -1997,8 +1997,9 @@ local function buildHub()
             if not char then return end
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then return end
+            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
+                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
                     local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if thrp then
                         local dist = (hrp.Position - thrp.Position).Magnitude
