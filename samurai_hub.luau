@@ -19,7 +19,6 @@ local HttpService      = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera      = Workspace.CurrentCamera
-local Events      = ReplicatedStorage:FindFirstChild("Events")
 
 pcall(function()
     for _, n in ipairs({"1nxsHub","1nxsLoader","1nxsMatchHUD","1nxsEvidHUD"}) do
@@ -587,6 +586,7 @@ local function hookGameEvents()
                 S._matchInProgress = true
                 S._myKills = 0
                 S._myDeaths = 0
+                S._queueJoined = false
                 notify("⚔ Match started!", C.Accent, 4)
                 updateMatchHUD()
             elseif eventName == "RoundFight" then
@@ -596,6 +596,7 @@ local function hookGameEvents()
             elseif eventName == "MatchEnd" then
                 S._matchInProgress = false
                 S._currentRound = 0
+                S._queueJoined = false
                 notify("🏁 Match ended", C.Red, 4)
                 updateMatchHUD()
             elseif eventName == "DeathFeed" then
@@ -963,8 +964,9 @@ local function buildHub()
         {name="Swords",    icon="🗡",   order=4},
         {name="Abilities", icon="⚡",   order=5},
         {name="Visual",    icon="✨",   order=6},
-        {name="Misc",      icon="⚙",   order=7},
-        {name="Config",    icon="🗂",   order=8},
+        {name="Finishers", icon="💥",   order=7},
+        {name="Misc",      icon="⚙",   order=8},
+        {name="Config",    icon="🗂",   order=9},
     }
 
     local sideBtns = {}
@@ -1532,17 +1534,11 @@ local function buildHub()
             return false, "Profile file is invalid"
         end
         S._configLoading = true
-        local deferredEvidenceESP = data.features["Evidence ESP"]
         for featureName, ctrl in pairs(S._toggleControls) do
-            if featureName ~= "Evidence ESP" then
-                local target = data.features[featureName]
-                if target ~= nil then
-                    ctrl.set(target, true)
-                end
+            local target = data.features[featureName]
+            if target ~= nil then
+                ctrl.set(target, true)
             end
-        end
-        if deferredEvidenceESP ~= nil and S._toggleControls["Evidence ESP"] then
-            S._toggleControls["Evidence ESP"].set(deferredEvidenceESP, true)
         end
         S._configLoading = false
         updateCount()
@@ -1745,69 +1741,13 @@ local function buildHub()
     makeToggle(combatPage, "Auto-Dash", "Auto-dash at nearest enemy (full charge)", 1, function(on)
         rmConn("autodash")
         if not on then return end
-        local lastDash = 0
         addConn("autodash", RunService.Heartbeat:Connect(function()
             if not S.Features["Auto-Dash"] then return end
-            local interval = S._dashInterval or 800
-            local now = tick()
-            if (now - lastDash) * 1000 < interval then return end
-            if fireDash() then lastDash = now end
+            fireDash()
         end))
     end)
 
-    do
-        local cont = Instance.new("Frame")
-        cont.Size = UDim2.new(1, 0, 0, 36)
-        cont.BackgroundTransparency = 1
-        cont.LayoutOrder = 2
-        cont.Parent = combatPage
-
-        local lbl = Instance.new("TextLabel")
-        lbl.Size = UDim2.new(0.5, 0, 1, 0)
-        lbl.BackgroundTransparency = 1
-        lbl.Text = "Dash interval (ms):"
-        lbl.TextColor3 = C.Text2
-        lbl.Font = C.FontReg
-        lbl.TextSize = 11
-        lbl.TextXAlignment = Enum.TextXAlignment.Left
-        lbl.Parent = cont
-        pad(lbl, 6, 6, 12, 0)
-
-        local inputBg = Instance.new("Frame")
-        inputBg.Size = UDim2.new(0, 70, 0, 26)
-        inputBg.Position = UDim2.new(1, -80, 0.5, -13)
-        inputBg.BackgroundColor3 = C.Bg4
-        inputBg.BorderSizePixel = 0
-        inputBg.Parent = cont
-        corner(inputBg, UDim.new(0, 4))
-
-        local input = Instance.new("TextBox")
-        input.Size = UDim2.new(1, -10, 1, 0)
-        input.Position = UDim2.new(0, 5, 0, 0)
-        input.BackgroundTransparency = 1
-        input.Text = "800"
-        input.TextColor3 = C.Text1
-        input.Font = C.FontMed
-        input.TextSize = 12
-        input.ClearTextOnFocus = false
-        input.Parent = inputBg
-
-        local function parseInterval()
-            local v = tonumber(input.Text)
-            if v then
-                S._dashInterval = math.clamp(v, 100, 5000)
-                input.Text = tostring(S._dashInterval)
-            else
-                input.Text = "800"
-                S._dashInterval = 800
-            end
-        end
-        parseInterval()
-        input.FocusLost:Connect(function() parseInterval() end)
-        S._dashInterval = 800
-    end
-
-    makeToggle(combatPage, "Auto-Parry", "Auto-block when enemy dashes nearby", 3, function(on)
+    makeToggle(combatPage, "Auto-Parry", "Auto-block when enemy dashes nearby", 2, function(on)
         rmConn("autoparry")
         if not on then return end
         addConn("autoparry", RunService.Heartbeat:Connect(function()
@@ -1848,8 +1788,8 @@ local function buildHub()
                 end
             end
             if target then
-                local cf = CFrame.new(Camera.CFrame.Position, target.Position)
-                Camera.CFrame = cf
+                local goal = CFrame.new(Camera.CFrame.Position, target.Position)
+                Camera.CFrame = Camera.CFrame:Lerp(goal, 0.25)
             end
         end))
     end)
@@ -1882,6 +1822,7 @@ local function buildHub()
 
     makeToggle(combatPage, "Anti-Death", "Keep health max and auto-respawn", 7, function(on)
         rmConn("antideath")
+        rmConn("antideath_respawn")
         if not on then return end
         addConn("antideath", RunService.Heartbeat:Connect(function()
             if not S.Features["Anti-Death"] then return end
@@ -1892,14 +1833,13 @@ local function buildHub()
                 pcall(function() hum.Health = hum.MaxHealth end)
             end
         end))
-        LocalPlayer.CharacterAdded:Connect(function(char)
-            if not S.Features["Anti-Death"] then return end
+        addConn("antideath_respawn", LocalPlayer.CharacterAdded:Connect(function(char)
             task.wait(0.5)
             local hum = char:WaitForChild("Humanoid", 5)
             if hum then
                 pcall(function() hum.Health = hum.MaxHealth end)
             end
-        end)
+        end))
     end)
 
     makeToggle(combatPage, "Auto-Ability", "Auto-use special ability on cooldown", 8, function(on)
@@ -2083,18 +2023,19 @@ local function buildHub()
         end))
     end)
 
-    makeToggle(matchPage, "Auto-Vote Map", "Auto-vote for a map when voting starts", 2, function(on)
+    makeToggle(matchPage, "Auto-Vote Map", "Auto-vote first map when voting starts", 2, function(on)
         rmConn("autovote")
         if not on then return end
         local mapVote = remotes and remotes:FindFirstChild("MapVote")
+        local voted = false
         addConn("autovote", RunService.Heartbeat:Connect(function()
-            if not S.Features["Auto-Vote Map"] or not mapVote then return end
-            -- Auto-vote for first available map
+            if not S.Features["Auto-Vote Map"] or not mapVote or voted then return end
             local voteGui = LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("MapVote")
             if voteGui then
                 local firstBtn = voteGui:FindFirstChildWhichIsA("TextButton")
                 if firstBtn then
                     mapVote:FireServer(firstBtn.Name)
+                    voted = true
                 end
             end
         end))
@@ -2103,7 +2044,6 @@ local function buildHub()
     makeToggle(matchPage, "Auto-Spectate", "Auto-spectate after death", 3, function(on)
         rmConn("autospec")
         if not on then return end
-        local char = LocalPlayer.Character
         addConn("autospec", LocalPlayer.CharacterAdded:Connect(function()
             task.wait(3)
             local respawnGui = LocalPlayer:FindFirstChild("PlayerGui"):FindFirstChild("Respawn")
@@ -2337,6 +2277,86 @@ local function buildHub()
         end)
     end
 
+    --   PAGE: FINISHERS
+    -- ═══════════════════════════════════════
+    local finishersPage = makePage("Finishers")
+
+    local finishersTitle = Instance.new("TextLabel")
+    finishersTitle.Size = UDim2.new(1, 0, 0, 16)
+    finishersTitle.BackgroundTransparency = 1
+    finishersTitle.Text = "FINISHER MOVES"
+    finishersTitle.TextColor3 = C.AccentDim
+    finishersTitle.Font = C.Font
+    finishersTitle.TextSize = 9
+    finishersTitle.TextXAlignment = Enum.TextXAlignment.Left
+    finishersTitle.LayoutOrder = 0
+    finishersTitle.Parent = finishersPage
+
+    for i, fin in ipairs(FinisherDataDB) do
+        local gf = Instance.new("Frame")
+        gf.Size = UDim2.new(1, 0, 0, 36)
+        gf.BackgroundColor3 = C.Bg3
+        gf.BackgroundTransparency = 0.4
+        gf.BorderSizePixel = 0
+        gf.LayoutOrder = i
+        gf.Parent = finishersPage
+        corner(gf, UDim.new(0, 6))
+
+        local nm = Instance.new("TextLabel")
+        nm.Size = UDim2.new(0.35, 0, 0, 16)
+        nm.Position = UDim2.new(0, 10, 0, 3)
+        nm.BackgroundTransparency = 1
+        nm.Text = fin.name
+        nm.TextColor3 = C.Text1
+        nm.Font = C.FontMed
+        nm.TextSize = 11
+        nm.TextXAlignment = Enum.TextXAlignment.Left
+        nm.Parent = gf
+
+        local descLbl = Instance.new("TextLabel")
+        descLbl.Size = UDim2.new(0.35, 0, 0, 12)
+        descLbl.Position = UDim2.new(0, 10, 0, 20)
+        descLbl.BackgroundTransparency = 1
+        descLbl.Text = fin.desc
+        descLbl.TextColor3 = C.Text3
+        descLbl.Font = C.FontReg
+        descLbl.TextSize = 8
+        descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.Parent = gf
+
+        local priceTxt = Instance.new("TextLabel")
+        priceTxt.Size = UDim2.new(0.2, 0, 0, 14)
+        priceTxt.Position = UDim2.new(0.55, 0, 0.5, -7)
+        priceTxt.BackgroundTransparency = 1
+        local priceStr = fin.type == "Robux" and tostring(fin.amount) .. " R$" or (fin.type == "Wins" and tostring(fin.amount) .. " Wins" or tostring(fin.amount) .. " Keys")
+        priceTxt.Text = priceStr
+        priceTxt.TextColor3 = fin.type == "Robux" and C.Green or (fin.type == "Wins" and C.Yellow or C.Accent)
+        priceTxt.Font = C.FontReg
+        priceTxt.TextSize = 8
+        priceTxt.Parent = gf
+
+        local equipBtn = Instance.new("TextButton")
+        equipBtn.Size = UDim2.new(0, 60, 0, 24)
+        equipBtn.Position = UDim2.new(1, -68, 0.5, -12)
+        equipBtn.BackgroundColor3 = C.Purple
+        equipBtn.BackgroundTransparency = 0.35
+        equipBtn.BorderSizePixel = 0
+        equipBtn.Text = "Equip"
+        equipBtn.TextColor3 = C.Text1
+        equipBtn.Font = C.FontMed
+        equipBtn.TextSize = 10
+        equipBtn.Parent = gf
+        corner(equipBtn, UDim.new(0, 5))
+
+        local finisherShopEvent = remotes and remotes:FindFirstChild("FinisherShopEvent")
+        equipBtn.MouseButton1Click:Connect(function()
+            if finisherShopEvent then
+                finisherShopEvent:FireServer("Equip", fin.name)
+                notify("💥 Equipped finisher " .. fin.name, C.Purple, 3)
+            end
+        end)
+    end
+
     --   PAGE: VISUAL
     -- ═══════════════════════════════════════
     local visPage = makePage("Visual")
@@ -2354,8 +2374,8 @@ local function buildHub()
             Lighting.GlobalShadows = false
             Lighting.Ambient = Color3.fromRGB(180, 180, 180)
             Lighting.OutdoorAmbient = Color3.fromRGB(180, 180, 180)
-        else
-            if S._origLight then for k, v in pairs(S._origLight) do pcall(function() Lighting[k] = v end) end end
+        elseif S._origLight then
+            for k, v in pairs(S._origLight) do pcall(function() Lighting[k] = v end) end
         end
     end)
 
@@ -2419,8 +2439,8 @@ local function buildHub()
         if on then
             S._origFog = {FogEnd = Lighting.FogEnd, FogStart = Lighting.FogStart}
             Lighting.FogEnd = 1e6; Lighting.FogStart = 1e6
-        else
-            if S._origFog then Lighting.FogEnd = S._origFog.FogEnd; Lighting.FogStart = S._origFog.FogStart end
+        elseif S._origFog then
+            Lighting.FogEnd = S._origFog.FogEnd; Lighting.FogStart = S._origFog.FogStart
         end
     end)
 
