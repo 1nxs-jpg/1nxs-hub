@@ -1757,12 +1757,28 @@ local function buildHub()
             if not char then return end
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then return end
+            local myPos = hrp.Position
             for _, p in pairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer and p.Character and p.Team ~= LocalPlayer.Team then
                     local thrp = p.Character:FindFirstChild("HumanoidRootPart")
-                    if thrp and (hrp.Position - thrp.Position).Magnitude < 20 then
+                    if not thrp then continue end
+                    local dir = myPos - thrp.Position
+                    local dist = dir.Magnitude
+                    if dist < 20 then
                         blockEvent:FireServer()
                         break
+                    end
+                    if dist < 55 then
+                        local vel = thrp.Velocity
+                        local speed = vel.Magnitude
+                        if speed > 30 then
+                            local toward = dir.Unit
+                            local velDir = vel.Unit
+                            if velDir:Dot(toward) > 0.6 then
+                                blockEvent:FireServer()
+                                break
+                            end
+                        end
                     end
                 end
             end
