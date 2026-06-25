@@ -275,6 +275,18 @@ if needsKey() then
 end
 _G["1NXS_AUTHENTICATED"] = true
 
+local function isEnemy(p)
+    if p == LocalPlayer then return false end
+    if not p.Character then return false end
+    local teammateStr = LocalPlayer:GetAttribute("Teammate") or ""
+    if teammateStr ~= "" then
+        for name in teammateStr:gmatch("[^,]+") do
+            if p.Name == name then return false end
+        end
+    end
+    return true
+end
+
 local C = {
     Key             = Enum.KeyCode.RightShift,
     Bg1             = Color3.fromRGB(12, 12, 16),
@@ -1721,9 +1733,8 @@ local function buildHub()
         local hrp = char:FindFirstChild("HumanoidRootPart")
         if not hrp then return false end
         local target, bestDist = nil, math.huge
-        local myTeam = LocalPlayer.Team
         for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
+            if isEnemy(p) then
                 local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                 if thrp then
                     local d = (hrp.Position - thrp.Position).Magnitude
@@ -1759,7 +1770,7 @@ local function buildHub()
             if not hrp then return end
             local myPos = hrp.Position
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Team ~= LocalPlayer.Team then
+                if isEnemy(p) then
                     local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if not thrp then continue end
                     local dir = myPos - thrp.Position
@@ -1795,9 +1806,8 @@ local function buildHub()
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then return end
             local target, bestDist = nil, math.huge
-            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
+                if isEnemy(p) then
                     local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if thrp then
                         local d = (hrp.Position - thrp.Position).Magnitude
@@ -1891,9 +1901,8 @@ local function buildHub()
             clearHL("players")
             S.Highlights["players"] = {}
             S.Billboards["players"] = {}
-            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
+                if isEnemy(p) then
                     local hrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if hrp then
                         local hl = Instance.new("Highlight")
@@ -1954,9 +1963,8 @@ local function buildHub()
         local function scan()
             clearHL("rings")
             S.Highlights["rings"] = {}
-            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
+                if isEnemy(p) then
                     local hrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if hrp then
                         local ring = Instance.new("Part")
@@ -1964,8 +1972,8 @@ local function buildHub()
                         ring.Size = Vector3.new(6, 0.2, 6)
                         ring.Shape = Enum.PartType.Cylinder
                         ring.Material = Enum.Material.Neon
-                        ring.Color = p.TeamColor.Color
-                        ring.BrickColor = p.TeamColor
+                        ring.Color = Color3.fromRGB(240, 80, 80)
+                        ring.BrickColor = BrickColor.new("Bright red")
                         ring.Anchored = true
                         ring.CanCollide = false
                         ring.Transparency = 0.3
@@ -2013,9 +2021,8 @@ local function buildHub()
             if not char then return end
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then return end
-            local myTeam = LocalPlayer.Team
             for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Team ~= myTeam then
+                if isEnemy(p) then
                     local thrp = p.Character:FindFirstChild("HumanoidRootPart")
                     if thrp then
                         local dist = (hrp.Position - thrp.Position).Magnitude
