@@ -1718,11 +1718,11 @@ local function buildHub()
 
     local function fireDash()
         local dashEvent = findDashEvent()
-        if not dashEvent then return end
+        if not dashEvent then return false end
         local char = LocalPlayer.Character
-        if not char then return end
+        if not char then return false end
         local hrp = char:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
+        if not hrp then return false end
         local target, bestDist = nil, math.huge
         for _, p in pairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character then
@@ -1736,7 +1736,9 @@ local function buildHub()
         if target then
             local aimDir = (target.Position - hrp.Position).Unit
             dashEvent:FireServer(1.0, true, aimDir)
+            return true
         end
+        return false
     end
 
     makeToggle(combatPage, "Auto-Dash", "Auto-dash at nearest enemy (full charge)", 1, function(on)
@@ -1748,8 +1750,7 @@ local function buildHub()
             local interval = S._dashInterval or 800
             local now = tick()
             if (now - lastDash) * 1000 < interval then return end
-            lastDash = now
-            fireDash()
+            if fireDash() then lastDash = now end
         end))
     end)
 
@@ -1801,7 +1802,7 @@ local function buildHub()
             end
         end
         parseInterval()
-        input.FocusLost:Connect(function(enter) if enter then parseInterval() end end)
+        input.FocusLost:Connect(function() parseInterval() end)
         S._dashInterval = 800
     end
 
