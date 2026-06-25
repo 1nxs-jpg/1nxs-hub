@@ -210,6 +210,19 @@ local function showKeySystem()
         if enter then validateKey(inputBox.Text) end
     end)
 
+    local function saveKey(key)
+        pcall(function()
+            if not writefile then return end
+            local expiry = 1e14
+            local data = game:GetService("HttpService"):JSONEncode({
+                key = key,
+                expiry = expiry,
+                userId = LocalPlayer.UserId,
+            })
+            writefile(KEY_FILE, data)
+        end)
+    end
+
     -- Wait for key validation (5 min timeout)
     local deadline = tick() + 300
     while not keyValid and tick() < deadline do
@@ -242,18 +255,6 @@ local function loadSavedKey()
     end)
     if not ok then return nil end
     return saved
-end
-local function saveKey(key)
-    pcall(function()
-        if not writefile then return end
-        local expiry = 1e14 -- effectively permanent
-        local data = game:GetService("HttpService"):JSONEncode({
-            key = key,
-            expiry = expiry,
-            userId = LocalPlayer.UserId,
-        })
-        writefile(KEY_FILE, data)
-    end)
 end
 
 -- Run key system (skip if already authed this session or saved key valid)
