@@ -507,27 +507,6 @@ local function updateMatchHUD()
     S._hudLabels.round.Text = "Round " .. S._currentRound .. "/" .. S._maxRounds
     S._hudLabels.timer.Text = math.max(0, math.floor(S._roundTimeLeft)) .. "s"
 end
-                                local center = bb.Position
-                                local half = size / 2
-                                local diff = hrp.Position - center
-                                if math.abs(diff.X) <= half.X and math.abs(diff.Y) <= half.Y and math.abs(diff.Z) <= half.Z then
-                                    found = rm.Name
-                                    break
-                                end
-                            end
-                        end
-                        if found ~= S._ghostRoom then
-                            S._ghostRoom = found
-                            roomLabel.Text = "📍 " .. found
-                        end
-                    end
-                end
-            end
-        end
-    end))
-
-    return roomLabel
-end
 
 -- NOTIFICATION SYSTEM
 local function notify(text, color, dur)
