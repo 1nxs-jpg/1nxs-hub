@@ -1,7 +1,7 @@
 --[[
-    1NXS SAMURAI DUELS HUB v1.0
+    1NXS SAMURAI HUB v1.0
     made by 1nxs on discord
-    Retooled for Samurai DUELS PvP combat features
+    PvP combat features for Samurai DUELS
 --]]
 
 -- ═══════════════════════════════════════
@@ -85,7 +85,7 @@ local function showKeySystem()
     title.Size = UDim2.new(1, 0, 0, 40)
     title.Position = UDim2.new(0, 0, 0, 10)
     title.BackgroundTransparency = 1
-    title.Text = "🗝️ Samurai DUELS Hub v1.0"
+    title.Text = "🗝️ Samurai Hub v1.0"
     title.TextColor3 = Color3.fromRGB(200, 160, 255)
     title.Font = Enum.Font.GothamBold
     title.TextSize = 18
@@ -658,7 +658,7 @@ local function showLoadingScreen(onComplete)
     logo.Size = UDim2.new(1, 0, 0, 40)
     logo.Position = UDim2.new(0, 0, 0, 30)
     logo.BackgroundTransparency = 1
-    logo.Text = "SAMURAI DUELS"
+    logo.Text = "SAMURAI HUB"
     logo.TextColor3 = C.Text1
     logo.Font = C.Font
     logo.TextSize = 28
@@ -669,7 +669,7 @@ local function showLoadingScreen(onComplete)
     ver.Size = UDim2.new(1, 0, 0, 18)
     ver.Position = UDim2.new(0, 0, 0, 70)
     ver.BackgroundTransparency = 1
-    ver.Text = "v1.0 — sword PvP combat features"
+    ver.Text = "v1.0 — PvP combat features"
     ver.TextColor3 = C.AccentDim
     ver.Font = C.FontMed
     ver.TextSize = 13
@@ -861,7 +861,7 @@ local function buildHub()
     titleTxt.Size = UDim2.new(0, 250, 0, 20)
     titleTxt.Position = UDim2.new(0, 60, 0, 8)
     titleTxt.BackgroundTransparency = 1
-    titleTxt.Text = "SAMURAI DUELS HUB"
+    titleTxt.Text = "SAMURAI HUB"
     titleTxt.TextColor3 = C.Text1
     titleTxt.Font = C.Font
     titleTxt.TextSize = 16
@@ -1221,7 +1221,7 @@ local function buildHub()
     heroSub.Size = UDim2.new(1, -140, 0, 18)
     heroSub.Position = UDim2.new(0, 126, 0, 66)
     heroSub.BackgroundTransparency = 1
-    heroSub.Text = "1nxs - Samurai DUELS Hub"
+    heroSub.Text = "1nxs - Samurai Hub"
     heroSub.TextColor3 = C.Text2
     heroSub.Font = C.FontReg
     heroSub.TextSize = 12
@@ -2810,7 +2810,7 @@ local function buildHub()
     tw(uiScale, {Scale = isPhone and 0.92 or 1}, 0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 
     task.wait(0.6)
-    notify("🗡️ Samurai DUELS Hub v1.0 loaded", C.Accent, 4)
+    notify("🗡️ Samurai Hub v1.0 loaded", C.Accent, 4)
     notify("made by 1nxs on discord", C.Text3, 5)
     notify("RightShift to toggle", C.Text3, 4)
 end
@@ -2828,6 +2828,6 @@ showLoadingScreen(function()
     end
 end)
 
-print("[1nxs Hub] ✅ Samurai DUELS Hub v1.0 Loaded")
+print("[1nxs Hub] ✅ Samurai Hub v1.0 Loaded")
 
 
