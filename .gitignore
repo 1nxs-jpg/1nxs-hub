@@ -23,8 +23,7 @@ docs/
 scripts/
 .agents/
 jailbreak/
-connector.luau
-demonology_hub.lua
+# connector.luau and demonology_hub.lua are hub scripts — keep in repo
 bun.lock
 package-lock.json
 package.json
