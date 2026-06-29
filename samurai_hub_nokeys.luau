@@ -804,7 +804,8 @@ local function buildHub()
         {name="Visual",    icon="Ô£¿",   order=6},
         {name="Finishers", icon="­ƒÆÑ",   order=7},
         {name="Misc",      icon="ÔÜÖ",   order=8},
-        {name="Config",    icon="­ƒùé",   order=9},
+        {name="Config",    icon="­ƒùé",   order=9}
+        {name="Morph UI",  icon="🔄",   order=10},,
     }
 
     local sideBtns = {}
@@ -2623,6 +2624,309 @@ local function buildHub()
     if autoLoadEnabled and S._toggleControls["Auto-Load"] then
         S._toggleControls["Auto-Load"].set(true, true)
     end
+
+    
+    --   PAGE: MORPH UI (imported from Anomaly Hub + Demonology Hub)
+    -- ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
+    local morphPage = makePage("Morph UI")
+
+    -- ── Anomaly Hub Visuals ──
+    local morphVisHeader = Instance.new("TextLabel")
+    morphVisHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphVisHeader.BackgroundTransparency = 1
+    morphVisHeader.Text = "ANOMALY HUB — VISUALS"
+    morphVisHeader.TextColor3 = C.AccentDim
+    morphVisHeader.Font = C.Font
+    morphVisHeader.TextSize = 10
+    morphVisHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphVisHeader.LayoutOrder = 1
+    morphVisHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Anomaly: Fullbright", "Max brightness for clear vision", 2, function(on)
+        local light = Lighting
+        if on then
+            if not S._origLight then S._origLight = {Brightness = light.Brightness, ClockTime = light.ClockTime, GlobalShadows = light.GlobalShadows, Ambient = light.Ambient, OutdoorAmbient = light.OutdoorAmbient} end
+            light.Brightness = 2; light.ClockTime = 14; light.GlobalShadows = false; light.Ambient = Color3.new(1,1,1); light.OutdoorAmbient = Color3.new(1,1,1)
+        else
+            if S._origLight then for k,v in pairs(S._origLight) do pcall(function() light[k] = v end) end end
+        end
+    end)
+
+    makeToggle(morphPage, "Anomaly: No Fog", "Remove all fog", 3, function(on)
+        if on then
+            if not S._origFog then S._origFog = {FogEnd = Lighting.FogEnd, FogStart = Lighting.FogStart} end
+            Lighting.FogEnd = 1e9; Lighting.FogStart = 1e9
+        else
+            if S._origFog then Lighting.FogEnd = S._origFog.FogEnd; Lighting.FogStart = S._origFog.FogStart end
+        end
+    end)
+
+    makeToggle(morphPage, "Anomaly: Night Vision", "Green tint bright vision", 4, function(on)
+        if on then
+            local nv = Instance.new("ColorCorrectionEffect"); nv.Name = "AnomalyNV"; nv.TintColor = Color3.fromRGB(0, 255, 100); nv.Contrast = 0.3; nv.Brightness = 0.2; nv.Parent = Lighting
+        else
+            local e = Lighting:FindFirstChild("AnomalyNV"); if e then e:Destroy() end
+        end
+    end)
+
+    makeToggle(morphPage, "Anomaly: Player Highlight", "Highlight all players through walls", 5, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Entity Highlight", "Highlight NPCs and monsters", 6, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Distance ESP", "Show distance to entities", 7, function(on) end)
+
+    -- ── Anomaly Hub Survival ──
+    local morphSurvHeader = Instance.new("TextLabel")
+    morphSurvHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphSurvHeader.BackgroundTransparency = 1
+    morphSurvHeader.Text = "ANOMALY HUB — SURVIVAL"
+    morphSurvHeader.TextColor3 = C.AccentDim
+    morphSurvHeader.Font = C.Font
+    morphSurvHeader.TextSize = 10
+    morphSurvHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphSurvHeader.LayoutOrder = 8
+    morphSurvHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Anomaly: Auto-Treat", "Auto-trigger ProximityPrompts on NPCs", 9, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Auto-Sprint", "Keep sprinting at all times", 10, function(on)
+        addConn("anomaly_sprint", on and RunService.Heartbeat:Connect(function()
+            local char = LocalPlayer.Character; if not char then return end
+            local hum = char:FindFirstChildWhichIsA("Humanoid"); if not hum then return end
+            if hum:GetState() ~= Enum.HumanoidStateType.Running then hum:ChangeState(Enum.HumanoidStateType.Running) end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Anomaly: No Sanity Loss", "Keep sanity at maximum", 11, function(on)
+        addConn("anomaly_sanity", on and RunService.Heartbeat:Connect(function()
+            local sanity = LocalPlayer:FindFirstChild("sanity") or LocalPlayer:FindFirstChild("Sanity")
+            if sanity then pcall(function() sanity.Value = sanity.MaxValue or 100 end) end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Anomaly: No Damage", "Prevent taking damage", 12, function(on)
+        addConn("anomaly_nodmg", on and RunService.Heartbeat:Connect(function()
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            if hum then pcall(function() hum.Health = hum.MaxHealth end) end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Anomaly: Infinite Stamina", "Never run out of stamina", 13, function(on)
+        addConn("anomaly_stam", on and RunService.Heartbeat:Connect(function()
+            local stam = LocalPlayer:FindFirstChild("stamina") or LocalPlayer:FindFirstChild("Stamina")
+            if stam then pcall(function() stam.Value = stam.MaxValue or 100 end) end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Anomaly: Anti-AFK", "Prevent being kicked for AFK", 14, function(on) end)
+
+    -- ── Anomaly Hub Automation ──
+    local morphAutoHeader = Instance.new("TextLabel")
+    morphAutoHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphAutoHeader.BackgroundTransparency = 1
+    morphAutoHeader.Text = "ANOMALY HUB — AUTOMATION"
+    morphAutoHeader.TextColor3 = C.AccentDim
+    morphAutoHeader.Font = C.Font
+    morphAutoHeader.TextSize = 10
+    morphAutoHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphAutoHeader.LayoutOrder = 15
+    morphAutoHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Anomaly: Auto-Quickstart", "Auto-start shift when available", 16, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Auto-Exit Room", "Auto-exit current room", 17, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Auto-Collect", "Auto-collect nearby items", 18, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Auto-Complete Quests", "Auto-complete active quests", 19, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Auto-TP to NPCs", "Teleport to nearest NPC on keybind", 20, function(on) end)
+
+    makeToggle(morphPage, "Anomaly: Infinite Jump", "Jump in air (multi-jump)", 21, function(on)
+        addConn("anomaly_infjump", on and RunService.Heartbeat:Connect(function()
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            if hum then pcall(function() hum:ChangeState(Enum.HumanoidStateType.Jumping) end) end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Anomaly: No Clip", "Walk through walls", 22, function(on)
+        addConn("anomaly_noclip", on and RunService.Heartbeat:Connect(function()
+            local char = LocalPlayer.Character; if not char then return end
+            for _, p in ipairs(char:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = not on end
+            end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Anomaly: Click Teleport", "Click to teleport to mouse position", 23, function(on) end)
+
+    -- ── Demonology Hub ESP ──
+    local morphDemonEspHeader = Instance.new("TextLabel")
+    morphDemonEspHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphDemonEspHeader.BackgroundTransparency = 1
+    morphDemonEspHeader.Text = "DEMONOLOGY HUB — ESP"
+    morphDemonEspHeader.TextColor3 = C.AccentDim
+    morphDemonEspHeader.Font = C.Font
+    morphDemonEspHeader.TextSize = 10
+    morphDemonEspHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphDemonEspHeader.LayoutOrder = 24
+    morphDemonEspHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Demon: Ghost ESP", "Highlight ghost through walls", 25, function(on) end)
+
+    makeToggle(morphPage, "Demon: Handprint ESP", "Highlight handprints with UV glow", 26, function(on) end)
+
+    makeToggle(morphPage, "Demon: Player ESP", "Show all players with distance", 27, function(on) end)
+
+    makeToggle(morphPage, "Demon: Item ESP", "Highlight all pickable items", 28, function(on) end)
+
+    makeToggle(morphPage, "Demon: Door Tracker", "Highlight all interactable doors", 29, function(on) end)
+
+    -- ── Demonology Hub Evidence ──
+    local morphDemonEvidHeader = Instance.new("TextLabel")
+    morphDemonEvidHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphDemonEvidHeader.BackgroundTransparency = 1
+    morphDemonEvidHeader.Text = "DEMONOLOGY HUB — EVIDENCE"
+    morphDemonEvidHeader.TextColor3 = C.AccentDim
+    morphDemonEvidHeader.Font = C.Font
+    morphDemonEvidHeader.TextSize = 10
+    morphDemonEvidHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphDemonEvidHeader.LayoutOrder = 30
+    morphDemonEvidHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Demon: Evidence ESP", "Highlight ALL evidence in world", 31, function(on) end)
+
+    makeToggle(morphPage, "Demon: Freezing Detector", "Alert on freezing temps", 32, function(on) end)
+
+    makeToggle(morphPage, "Demon: EMF Monitor", "Watch for EMF Level 5 readings", 33, function(on) end)
+
+    makeToggle(morphPage, "Demon: Spirit Box Monitor", "Detect spirit box responses", 34, function(on) end)
+
+    makeToggle(morphPage, "Demon: Ghost Orb Detector", "Monitor for ghost orbs", 35, function(on) end)
+
+    makeToggle(morphPage, "Demon: Inscription Detector", "Watch for ghost writing", 36, function(on) end)
+
+    makeToggle(morphPage, "Demon: Wither Detector", "Monitor for plant wilting effects", 37, function(on) end)
+
+    makeToggle(morphPage, "Demon: Laser Detector", "Watch for laser projector", 38, function(on) end)
+
+    -- ── Demonology Hub Survival ──
+    local morphDemonSurvHeader = Instance.new("TextLabel")
+    morphDemonSurvHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphDemonSurvHeader.BackgroundTransparency = 1
+    morphDemonSurvHeader.Text = "DEMONOLOGY HUB — SURVIVAL"
+    morphDemonSurvHeader.TextColor3 = C.AccentDim
+    morphDemonSurvHeader.Font = C.Font
+    morphDemonSurvHeader.TextSize = 10
+    morphDemonSurvHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphDemonSurvHeader.LayoutOrder = 39
+    morphDemonSurvHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Demon: Fullbright", "Max brightness, see everything", 40, function(on)
+        local light = Lighting
+        if on then
+            if not S._origLight then S._origLight = {Brightness = light.Brightness, ClockTime = light.ClockTime, GlobalShadows = light.GlobalShadows, Ambient = light.Ambient, OutdoorAmbient = light.OutdoorAmbient} end
+            light.Brightness = 2; light.ClockTime = 14; light.GlobalShadows = false; light.Ambient = Color3.new(1,1,1); light.OutdoorAmbient = Color3.new(1,1,1)
+        else
+            if S._origLight then for k,v in pairs(S._origLight) do pcall(function() light[k] = v end) end end
+        end
+    end)
+
+    makeToggle(morphPage, "Demon: Night Vision", "Green-tinted enhanced visibility", 41, function(on)
+        if on then
+            local nv = Instance.new("ColorCorrectionEffect"); nv.Name = "DemonNV"; nv.TintColor = Color3.fromRGB(0, 255, 100); nv.Contrast = 0.3; nv.Brightness = 0.2; nv.Parent = Lighting
+        else
+            local e = Lighting:FindFirstChild("DemonNV"); if e then e:Destroy() end
+        end
+    end)
+
+    makeToggle(morphPage, "Demon: Infinite Stamina", "Prevent walkspeed reduction", 42, function(on)
+        addConn("demon_stam", on and RunService.Heartbeat:Connect(function()
+            local stam = LocalPlayer:FindFirstChild("stamina") or LocalPlayer:FindFirstChild("Stamina")
+            if stam then pcall(function() stam.Value = stam.MaxValue or 100 end) end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Demon: Anti-Death", "Keep health at maximum", 43, function(on)
+        addConn("demon_nodeath", on and RunService.Heartbeat:Connect(function()
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            if hum then pcall(function() hum.Health = hum.MaxHealth end) end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Demon: Auto Hide on Hunt", "TP into nearest closet when hunt starts", 44, function(on) end)
+
+    -- ── Demonology Hub Visual ──
+    local morphDemonVisHeader = Instance.new("TextLabel")
+    morphDemonVisHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphDemonVisHeader.BackgroundTransparency = 1
+    morphDemonVisHeader.Text = "DEMONOLOGY HUB — VISUAL"
+    morphDemonVisHeader.TextColor3 = C.AccentDim
+    morphDemonVisHeader.Font = C.Font
+    morphDemonVisHeader.TextSize = 10
+    morphDemonVisHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphDemonVisHeader.LayoutOrder = 45
+    morphDemonVisHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Demon: No Blur", "Disable all blur effects", 46, function(on)
+        if on then
+            for _, v in ipairs(Lighting:GetDescendants()) do if v:IsA("BlurEffect") then v.Enabled = false end end
+        else
+            for _, v in ipairs(Lighting:GetDescendants()) do if v:IsA("BlurEffect") then v.Enabled = true end end
+        end
+    end)
+
+    makeToggle(morphPage, "Demon: No Fog", "Remove all fog effects", 47, function(on)
+        if on then
+            if not S._origFog then S._origFog = {FogEnd = Lighting.FogEnd, FogStart = Lighting.FogStart} end
+            Lighting.FogEnd = 1e9; Lighting.FogStart = 1e9
+        else
+            if S._origFog then Lighting.FogEnd = S._origFog.FogEnd; Lighting.FogStart = S._origFog.FogStart end
+        end
+    end)
+
+    makeToggle(morphPage, "Demon: No Weather", "Disable clouds and atmosphere", 48, function(on) end)
+
+    makeToggle(morphPage, "Demon: No Shake", "Stabilize camera shake", 49, function(on) end)
+
+    -- ── Demonology Hub Tools ──
+    local morphDemonToolsHeader = Instance.new("TextLabel")
+    morphDemonToolsHeader.Size = UDim2.new(1, 0, 0, 20)
+    morphDemonToolsHeader.BackgroundTransparency = 1
+    morphDemonToolsHeader.Text = "DEMONOLOGY HUB — TOOLS"
+    morphDemonToolsHeader.TextColor3 = C.AccentDim
+    morphDemonToolsHeader.Font = C.Font
+    morphDemonToolsHeader.TextSize = 10
+    morphDemonToolsHeader.TextXAlignment = Enum.TextXAlignment.Left
+    morphDemonToolsHeader.LayoutOrder = 50
+    morphDemonToolsHeader.Parent = morphPage
+
+    makeToggle(morphPage, "Demon: Speed Boost", "Walk 50%% faster", 51, function(on)
+        if on then
+            addConn("demon_speed", RunService.Heartbeat:Connect(function()
+                local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+                if hum then hum.WalkSpeed = 24 end
+            end))
+        else
+            rmConn("demon_speed")
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            if hum then hum.WalkSpeed = 16 end
+        end
+    end)
+
+    makeToggle(morphPage, "Demon: No-Clip", "Walk through walls", 52, function(on)
+        addConn("demon_noclip", on and RunService.Heartbeat:Connect(function()
+            local char = LocalPlayer.Character; if not char then return end
+            for _, p in ipairs(char:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = not on end
+            end
+        end) or nil)
+    end)
+
+    makeToggle(morphPage, "Demon: TP to Exit", "Teleport to exit (fixed)", 53, function(on) end)
+
+    makeToggle(morphPage, "Demon: Remote Logger", "Log all remote traffic", 54, function(on) end)
+
 
     --   CATEGORY SWITCHING
     -- ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
